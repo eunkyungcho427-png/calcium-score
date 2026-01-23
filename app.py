@@ -71,6 +71,8 @@ with upload_card:
 
 if uploaded_file:
     df = pd.read_excel(uploaded_file)
+    # 읽어온 직후 모든 문자열 데이터에서 해당 기호 제거
+    df = df.applymap(lambda x: x.replace('_x000D_', '') if isinstance(x, str) else x)
     
     # 분석 설정
     col_name = st.selectbox("분석할 텍스트 열(Column)을 선택하세요.", df.columns)
