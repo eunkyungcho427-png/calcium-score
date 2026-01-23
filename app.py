@@ -95,6 +95,15 @@ if uploaded_file:
         st.subheader("📋 분석 결과 데이터")
         st.dataframe(df[[col_name, '추출된_CACS']].head(20), use_container_width=True)
 
+        # --- [다운로드 전 데이터 정제 코드] ---
+        # 모든 열에서 _x000D_ 문자를 찾아 실제 줄바꿈 문자로 변경
+        df = df.replace('_x000D_', '', regex=True) 
+        # 또는 아예 깔끔하게 지우고 싶다면 위와 같이 하시고, 
+        # 줄바꿈을 유지하고 싶다면 아래와 같이 작성합니다.
+        # df = df.replace('_x000D_', '\n', regex=True)
+        
+        # ----------------------------------
+               
         # 다운로드 버튼
         output = BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
