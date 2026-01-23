@@ -37,7 +37,7 @@ with col1:
     
     # app.py 파일의 버튼 부분
     if st.button("CACS 도구 실행하기", key="btn_move"):
-        st.switch_page("pages/1_CACS_Tool.py")
+        st.switch_page("1_CACS_Tool.py")
 
 with col2:
     st.markdown("""
