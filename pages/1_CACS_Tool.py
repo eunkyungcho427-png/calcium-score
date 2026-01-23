@@ -3,6 +3,18 @@ import pandas as pd
 import re
 from io import BytesIO
 
+# 페이지 설정 (각 파일마다 상단에 써줘야 합니다)
+st.set_page_config(page_title="CACS Tool", page_icon="📊")
+
+st.title("📊 CACS 데이터 추출 도구")
+
+# --- 로직 부분 (VBA 변환 함수 등 동일하게 작성) ---
+def clean_excel_data(df):
+    """_x000D_ 이슈 해결을 위한 정제 함수"""
+    return df.replace('_x000D_', '', regex=True)
+
+def extract_cacs_number(text):
+
 # --- [VBA 로직의 파이썬 구현] ---
 def extract_cacs_number(text):
     if pd.isna(text):
@@ -53,7 +65,7 @@ def extract_cacs_number(text):
                 
     return last_number
 
-# --- [Streamlit 웹 화면 구성] ---
+# --- UI 부분 ---
 st.set_page_config(page_title="CACS 데이터 추출기", layout="wide")
 st.title("🏥 CACS(Calcium Score) 자동 추출 앱")
 st.markdown("""
@@ -61,22 +73,20 @@ st.markdown("""
 VBA의 복잡한 로직이 그대로 적용되어 있습니다.
 """)
 
-uploaded_file = st.file_uploader("검사 결과가 담긴 엑셀 파일을 업로드하세요.", type=["xlsx"])
+
+uploaded_file = st.file_uploader("분석할 엑셀 파일을 업로드하세요.", type=["xlsx"])
 
 if uploaded_file:
     df = pd.read_excel(uploaded_file)
+    # 데이터 정제 (읽어오자마자 수행)
+    df = clean_excel_data(df)
     
-    # 컬럼 선택 UI
-    col_name = st.selectbox("데이터가 들어있는 컬럼(열)을 선택하세요.", df.columns)
+    col_name = st.selectbox("데이터 열 선택", df.columns)
     
-    if st.button("데이터 분석 및 추출 시작"):
-        with st.spinner('데이터를 분석 중입니다...'):
-            # 로직 적용
-            df['추출된_CACS_결과'] = df[col_name].apply(extract_cacs_number)
-            
-            st.success("분석 완료!")
-            st.subheader("📌 추출 결과 미리보기")
-            st.write(df[[col_name, '추출된_CACS_결과']].head(10))
+    if st.button("분석 실행"):
+        df['추출된_CACS'] = df[col_name].apply(extract_cacs_number)
+        st.success("추출 완료!")
+        st.dataframe(df.head())
 
             # 엑셀 다운로드 파일 생성
             output = BytesIO()
