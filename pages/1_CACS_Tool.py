@@ -3,10 +3,15 @@ import pandas as pd
 import re
 from io import BytesIO
 
-# 페이지 설정 (각 파일마다 상단에 써줘야 합니다)
-st.set_page_config(page_title="CACS Tool", page_icon="📊")
+# 페이지 설정
+st.set_page_config(page_title="CACS Tool", page_icon="📊", layout="wide")
+
+# 홈으로 돌아가기 버튼 (사이드바 상단)
+if st.sidebar.button("🏠 메인 화면으로 이동"):
+    st.switch_page("app.py")
 
 st.title("📊 CACS 데이터 추출 도구")
+st.info("사이드바의 '메인 화면으로 이동' 버튼을 누르면 처음으로 돌아갑니다.")
 
 # --- 로직 부분 (VBA 변환 함수 등 동일하게 작성) ---
 def clean_excel_data(df):
