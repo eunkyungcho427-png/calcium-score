@@ -1,5 +1,8 @@
 import streamlit as st
 
+# 프로젝트 최상위 폴더에서 실행
+streamlit run app.py
+
 # 1. 페이지 설정
 st.set_page_config(page_title="Medical AI Workspace", page_icon="🏥", layout="wide")
 
