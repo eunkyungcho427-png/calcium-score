@@ -19,7 +19,7 @@ def extract_cacs_number(text):
     if pd.isna(text): return "x"
     text = str(text)
     # VBA 로직을 반영한 패턴들
-    patterns = ["CACS", "ca scoring", "ca score:", "calcium scoring:", "calcium score:", "calcium score ", "calc. score:", "CCS"]
+    patterns = ["CACS", "ca scoring", "ca score:", "calcium scoring:", "calcium score:", "calcium score ", "calc. score:", "calc. scoring", "ca score :", "ca score ;", "ca. score", "ca. scoring", "ca socring;", "CCS"]
     valid_status = ["pending", "none", "zero"]
     last_number = "x"
 
