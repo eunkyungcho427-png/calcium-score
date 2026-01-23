@@ -36,7 +36,7 @@ with col1:
     """, unsafe_allow_html=True)
     
     # 버튼 클릭 시 페이지 이동 (파일명과 경로가 정확해야 합니다)
-    if st.button("CACS 도구 실행하기", key="btn_cacs", use_container_width=True):
+    if st.button("CACS 도구 실행하기", use_container_width=True):
         try:
             # 경로를 명확히 지정 (pages/파일명)
             st.switch_page("calcium/pages/1_CACS_Tool.py")
