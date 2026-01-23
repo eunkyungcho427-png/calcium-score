@@ -20,54 +20,30 @@ def clean_excel_data(df):
 
 def extract_cacs_number(text):
 
-# --- [VBA 로직의 파이썬 구현] ---
+# --- [핵심 로직: VBA 변환 함수] ---
 def extract_cacs_number(text):
-    if pd.isna(text):
-        return "x"
-    
+    if pd.isna(text): return "x"
     text = str(text)
-    patterns = [
-        "CACS", "ca scoring", "ca score:", "calcium scoring:", "calcium score:", 
-        "calcium score ", "calc. score:", "calc. scoring", "ca score :", 
-        "ca score ;", "ca. score", "ca. scoring", "ca socring;", "CCS"
-    ]
+    patterns = ["CACS", "ca scoring", "ca score:", "calcium scoring:", "calcium score:", "CCS"]
     valid_status = ["pending", "none", "zero"]
     last_number = "x"
 
     for pattern in patterns:
-        # 1. 패턴 위치 찾기 (대소문자 구분 없음)
         match = re.search(re.escape(pattern), text, re.IGNORECASE)
         if match:
-            # 패턴 이후의 텍스트 한 줄만 가져오기
             start_pos = match.end()
             line = text[start_pos:].split('\n')[0].split('\r')[0]
-
-            # 2. 특수문자 제거 (숫자, 점, 영문 외 공백 처리)
             clean_line = re.sub(r'[^A-Za-z0-9.]', ' ', line)
             words = clean_line.split()
-
-            # 3. 단어별 순회하며 수치 추출
             for word in words:
                 clean_word = word.strip().lower()
-                
-                # 끝에 마침표 제거 (숫자가 아닐 때만)
-                if clean_word.endswith('.') and not re.match(r'^\d+\.\d+$', clean_word):
-                    clean_word = clean_word[:-1]
-
-                # (A) 숫자인 경우
                 if re.match(r'^-?\d+(\.\d+)?$', clean_word):
                     last_number = clean_word
-                # (B) 허용된 상태값인 경우
                 elif clean_word in valid_status:
                     last_number = clean_word
-                # (C) 핵심 방어 로직: 일반 단어를 만나면 중단
                 elif len(clean_word) > 1:
-                    if last_number != "x":
-                        break
-            
-            if last_number != "x":
-                break
-                
+                    if last_number != "x": break
+            if last_number != "x": break
     return last_number
 
 # --- UI 부분 ---
