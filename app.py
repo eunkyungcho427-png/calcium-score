@@ -38,10 +38,6 @@ with col1:
     # app.py 파일의 버튼 부분
     if st.button("CACS 도구 실행하기", key="btn_move"):
         st.switch_page("pages/1_CACS_Tool.py")
-        except Exception as e:
-            st.error(f"페이지 이동 중 오류가 발생했습니다. 파일명을 확인해 주세요.")
-            st.info("현재 설정된 경로: pages/1_CACS_Tool.py")
-
 
 with col2:
     st.markdown("""
