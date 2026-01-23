@@ -55,7 +55,7 @@ def extract_cacs_number(text):
 # --- [화면 구성] ---
 # 1. 사이드바 (설정 및 정보)
 with st.sidebar:
-    st.title("🏥 Medical Admin")
+    st.title("🏥 Medical 분석툴 by 조은경")
     st.info("이 도구는 의료 결과지에서 CACS 데이터를 정밀하게 추출합니다.")
     st.divider()
     st.caption("Version 1.0.0 | Contact: Admin")
