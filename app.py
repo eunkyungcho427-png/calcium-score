@@ -53,3 +53,7 @@ with col2:
     
     if st.button("준비 중...", key="btn_ai", disabled=True, use_container_width=True):
         pass
+        
+# 5. 하단 안내
+st.divider()
+st.caption("© 2026 Created by Cho Eunkyung from Seoul National University Bundang Hospital | 문의: eunkyungcho427@gmail.com")
