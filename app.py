@@ -35,9 +35,13 @@ with col1:
         </div>
     """, unsafe_allow_html=True)
     
-    # app.py 파일의 버튼 부분
-    if st.button("CACS 도구 실행하기", key="btn_move"):
-        st.switch_page("1_CACS_Tool.py")
+    # 수정된 버튼 부분
+    if st.button("CACS 도구 실행하기", key="btn_move", use_container_width=True):
+        try:
+            # 경로에 'pages/'를 반드시 포함해야 합니다.
+            st.switch_page("pages/1_CACS_Tool.py")
+        except Exception as e:
+            st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
 
 with col2:
     st.markdown("""
@@ -49,7 +53,3 @@ with col2:
     
     if st.button("준비 중...", key="btn_ai", disabled=True, use_container_width=True):
         pass
-
-# 5. 하단 안내
-# st.divider()
-# st.caption("© 2024 Medical Data Automation Team | 문의: 내선번호 0000")
