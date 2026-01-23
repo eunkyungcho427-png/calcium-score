@@ -1,0 +1,91 @@
+import streamlit as st
+import pandas as pd
+import re
+from io import BytesIO
+
+# --- [VBA 로직의 파이썬 구현] ---
+def extract_cacs_number(text):
+    if pd.isna(text):
+        return "x"
+    
+    text = str(text)
+    patterns = [
+        "CACS", "ca scoring", "ca score:", "calcium scoring:", "calcium score:", 
+        "calcium score ", "calc. score:", "calc. scoring", "ca score :", 
+        "ca score ;", "ca. score", "ca. scoring", "ca socring;", "CCS"
+    ]
+    valid_status = ["pending", "none", "zero"]
+    last_number = "x"
+
+    for pattern in patterns:
+        # 1. 패턴 위치 찾기 (대소문자 구분 없음)
+        match = re.search(re.escape(pattern), text, re.IGNORECASE)
+        if match:
+            # 패턴 이후의 텍스트 한 줄만 가져오기
+            start_pos = match.end()
+            line = text[start_pos:].split('\n')[0].split('\r')[0]
+
+            # 2. 특수문자 제거 (숫자, 점, 영문 외 공백 처리)
+            clean_line = re.sub(r'[^A-Za-z0-9.]', ' ', line)
+            words = clean_line.split()
+
+            # 3. 단어별 순회하며 수치 추출
+            for word in words:
+                clean_word = word.strip().lower()
+                
+                # 끝에 마침표 제거 (숫자가 아닐 때만)
+                if clean_word.endswith('.') and not re.match(r'^\d+\.\d+$', clean_word):
+                    clean_word = clean_word[:-1]
+
+                # (A) 숫자인 경우
+                if re.match(r'^-?\d+(\.\d+)?$', clean_word):
+                    last_number = clean_word
+                # (B) 허용된 상태값인 경우
+                elif clean_word in valid_status:
+                    last_number = clean_word
+                # (C) 핵심 방어 로직: 일반 단어를 만나면 중단
+                elif len(clean_word) > 1:
+                    if last_number != "x":
+                        break
+            
+            if last_number != "x":
+                break
+                
+    return last_number
+
+# --- [Streamlit 웹 화면 구성] ---
+st.set_page_config(page_title="CACS 데이터 추출기", layout="wide")
+st.title("🏥 CACS(Calcium Score) 자동 추출 앱")
+st.markdown("""
+이 앱은 엑셀 파일 내의 텍스트에서 **CACS 수치**를 자동으로 분류하여 결과 파일을 만들어줍니다.
+VBA의 복잡한 로직이 그대로 적용되어 있습니다.
+""")
+
+uploaded_file = st.file_uploader("검사 결과가 담긴 엑셀 파일을 업로드하세요.", type=["xlsx"])
+
+if uploaded_file:
+    df = pd.read_excel(uploaded_file)
+    
+    # 컬럼 선택 UI
+    col_name = st.selectbox("데이터가 들어있는 컬럼(열)을 선택하세요.", df.columns)
+    
+    if st.button("데이터 분석 및 추출 시작"):
+        with st.spinner('데이터를 분석 중입니다...'):
+            # 로직 적용
+            df['추출된_CACS_결과'] = df[col_name].apply(extract_cacs_number)
+            
+            st.success("분석 완료!")
+            st.subheader("📌 추출 결과 미리보기")
+            st.write(df[[col_name, '추출된_CACS_결과']].head(10))
+
+            # 엑셀 다운로드 파일 생성
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, index=False, sheet_name='Result')
+            
+            st.download_button(
+                label="📥 분석 결과 엑셀 다운로드",
+                data=output.getvalue(),
+                file_name="CACS_Result.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
