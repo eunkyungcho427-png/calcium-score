@@ -20,7 +20,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # 3. 메인 헤더
-st.title("🏥 Medical AI 업무 자동화 포털")
+# st.title("🏥 Medical AI 업무 자동화 포털")
 st.write("사용하고자 하는 도구를 사이드바에서 선택하거나 아래 버튼을 클릭하세요.")
 st.divider()
 
