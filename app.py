@@ -57,8 +57,8 @@ with col2:
             st.switch_page("pages/2_EF_Tool.py")
         except Exception as e:
             st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
-        pass
-        
+
+
 # 5. 하단 안내
 st.divider()
 st.caption("© 2026 Created by Cho Eunkyung from Seoul National University Bundang Hospital | 문의: eunkyungcho427@gmail.com")
