@@ -31,7 +31,7 @@ with col1:
     st.markdown("""
         <div class="tool-card">
             <h3>📊 CACS 데이터 추출기</h3>
-            <p>엑셀 판독문에서 Calcium Score를 자동으로 정밀 추출하고 정제합니다.</p>
+            <p>엑셀 판독문에서 CACS(Calcium Score)수치를 자동으로 정밀 추출하고 정제합니다.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -46,12 +46,12 @@ with col1:
 with col2:
     st.markdown("""
         <div class="tool-card">
-            <h3>🤖 AI 소견서 요약 (준비 중)</h3>
-            <p>Gemini AI를 활용하여 복잡한 판독문을 한 줄로 요약합니다.</p>
+            <h3>📊 EF 데이터 추출기</h3>
+            <p>엑셀 판독문에서 EF(Ejection Fraction)수치를 자동으로 정밀 추출하고 정제합니다.</p>
         </div>
     """, unsafe_allow_html=True)
     
-    if st.button("준비 중...", key="btn_ai", disabled=True, use_container_width=True):
+    if st.button("EF 도구 실행하기", key="btn_ai", disabled=True, use_container_width=True):
         pass
         
 # 5. 하단 안내
