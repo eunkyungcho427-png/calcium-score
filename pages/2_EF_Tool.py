@@ -79,7 +79,7 @@ if uploaded_file:
     if st.button("분석 실행"):
         with st.spinner('데이터를 분석 중입니다...'):
             # 분석 실행
-            df['추출된_CACS'] = df[col_name].apply(extract_cacs_number)
+            df['추출된_EF'] = df[col_name].apply(extract_cacs_number)
             
             st.success("분석 및 추출 완료!")
             
