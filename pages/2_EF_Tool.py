@@ -16,35 +16,43 @@ def clean_excel_data(df):
     return df.replace('_x000D_', '', regex=True).fillna('')
 
 def extract_latest_ef_value(text):
+    if pd.isna(text) or str(text).strip() == "":
+        return "x"
+    
     text = str(text)
-    # 3-0. pending 처리
-    if "pending" in text.lower():
-        return "pending"
-        
-    # 3-1. EF 또는 LVEF 위치 찾기
-    pattern = re.compile(r'(LVEF|\bEF\b)', re.IGNORECASE)
+    
+    # 1. EF 관련 키워드만 정확히 찾기 (\b는 단어 경계)
+    # Ca scoring의 'Ca'가 걸리지 않도록 명확히 단어 단위로 설정
+    pattern = re.compile(r'(\bLVEF\b|\bEF\b)', re.IGNORECASE)
     matches = list(pattern.finditer(text))
     
     if not matches:
         return "x"
     
-    # 3-2. 가장 마지막에 등장하는 패턴부터 역순 분석
+    # 2. 마지막 매칭부터 역순 분석
     for match in reversed(matches):
         start_pos = match.end()
-        temp_result = text[start_pos:]
+        # EF 단어 이후 최대 30자까지만 분석 (멀리 떨어진 텍스트 오염 방지)
+        look_ahead = text[start_pos:start_pos + 30]
         
-        # 줄바꿈 처리 (해당 라인만 분석)
-        line_end = temp_result.find('\n')
+        # 줄바꿈이 있으면 해당 라인만
+        line_end = look_ahead.find('\n')
         if line_end != -1:
-            temp_result = temp_result[:line_end]
-            
-        # 숫자 추출
-        numbers = re.findall(r'[0-9.]+', temp_result)
+            look_ahead = look_ahead[:line_end]
         
-        for num_str in numbers:
-            clean_num = num_str.strip('.')
-            if clean_num:
-                return clean_num # 발견 즉시 반환
+        # 3. 해당 구역에 'pending'이 있는지 먼저 확인
+        if "pending" in look_ahead.lower():
+            return "pending"
+            
+        # 4. 숫자 추출 ([0-9.]+ 패턴)
+        numbers = re.findall(r'[0-9.]+', look_ahead)
+        
+        if numbers:
+            # 추출된 문자열이 단순 마침표가 아닌지 확인
+            for num_str in numbers:
+                clean_num = num_str.strip('.')
+                if clean_num:
+                    return clean_num
                 
     return "x"
 
