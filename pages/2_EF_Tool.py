@@ -80,12 +80,18 @@ if uploaded_file:
         with st.spinner('데이터를 분석 중입니다...'):
             # 분석 실행
             df['추출된_EF'] = df[col_name].apply(extract_latest_ef_value)
-            
+
+            # 결과를 세션 스테이트에 저장 (리프레시 대비)
+            st.session_state['result_df'] = df            
             st.success("분석 및 추출 완료!")
             
+	    # 결과가 세션에 존재할 때만 화면에 출력
+    if 'result_df' in st.session_state:
+        result_df = st.session_state['result_df']
+
             # 결과 미리보기
             st.subheader("📌 결과 미리보기 (상위 5행)")
-            st.dataframe(df[[col_name, '추출된_CACS']].head())
+            st.dataframe(result_df[[col_name, '추출된_EF']].head(), use_container_width=True)
 
             # 엑셀 다운로드 파일 생성
             output = BytesIO()
@@ -97,6 +103,7 @@ if uploaded_file:
             st.download_button(
                 label="📥 분석 결과 엑셀 다운로드",
                 data=processed_data,
-                file_name="CACS_Analysis_Result.xlsx",
+                file_name="EF_Analysis_Result.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                use_container_width=True
             )
