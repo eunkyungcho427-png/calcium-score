@@ -52,11 +52,12 @@ with col2:
     """, unsafe_allow_html=True)
     
     if st.button("EF 도구 실행하기", key="btn_move", use_container_width=True):
-        try:
+        pass
+#        try:
             # 경로에 'pages/'를 반드시 포함해야 합니다.
-            st.switch_page("pages/2_EF_Tool.py")
-        except Exception as e:
-            st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
+#            st.switch_page("pages/2_EF_Tool.py")
+#        except Exception as e:
+#            st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
 
 
 # 5. 하단 안내
