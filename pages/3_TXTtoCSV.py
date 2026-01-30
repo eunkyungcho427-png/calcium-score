@@ -7,6 +7,12 @@ st.set_page_config(page_title="TXT to CSV Multi-Downloader", layout="centered")
 
 st.title("📂 TXT → CSV 맞춤 변환기")
 
+# 0. 설명
+st.markdown("다수의 텍스트 파일을 2가지 옵션의 CSV 파일로 변환합니다
+
+1. TXT 파일 안의 컨텐츠의 Tab 구조 그대로 CSV로 변환  
+2. TXT 파일 안의 빈 셀을 없애고 2열의 CSV로 변환 (2열까지만 가능)")
+
 # 1. 파일 업로드 (상단)
 uploaded_files = st.file_uploader("TXT 파일을 선택하세요", type=['txt'], accept_multiple_files=True)
 
