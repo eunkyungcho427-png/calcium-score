@@ -14,10 +14,10 @@ st.markdown("""다수의 텍스트 파일을 2가지 옵션의 CSV 파일로 변
 2. TXT 파일 안의 빈 셀을 없애고 2열의 CSV로 변환 (2열까지만 가능)
 """)
 
+st.divider()
+
 # 1. 파일 업로드 (상단)
 uploaded_files = st.file_uploader("TXT 파일을 선택하세요", type=['txt'], accept_multiple_files=True)
-
-st.divider()
 
 # 2. 변환 옵션 선택 (스크롤다운)
 mode = st.selectbox(
