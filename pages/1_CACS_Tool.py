@@ -54,11 +54,11 @@ VBA의 복잡한 로직이 파이썬 엔진으로 구현되어 있습니다.
 
 ● **정확도**: 97%\n
 ● **작동원리**\n
-    - CACS, calcium score 등 다양한 표현의 수치를 % 기호 제외하고 출력\n
-    - Calcium Score: 37.00 -> 41.45 인 경우, 41.45 를 출력\n
-    - 판독문 상에 수치가 없는 경우: x 출력, pending인 경우 pending 출력\n
+- CACS, calcium score 등 다양한 표현의 수치를 % 기호 제외하고 출력\n
+- Calcium Score: 37.00 -> 41.45 인 경우, 41.45 를 출력\n
+- 판독문 상에 수치가 없는 경우: x 출력, pending인 경우 pending 출력\n
 ● **원본파일 주의사항**\n
-    - 환자 ID, 판독문 열 정도로 데이터를 구성해 업로드해 주세요.
+- 환자 ID, 판독문 열 정도로 데이터를 구성해 업로드해 주세요.
 """)
 
 uploaded_file = st.file_uploader("분석할 엑셀 파일을 업로드하세요.", type=["xlsx"])
