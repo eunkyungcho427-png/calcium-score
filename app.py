@@ -25,7 +25,8 @@ st.write("사용하고자 하는 도구를 사이드바에서 선택하거나 �
 st.divider()
 
 # 4. 툴 선택 구역 (버튼 방식)
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
+col3, col4 = st.columns(2)
 
 with col1:
     st.markdown("""
@@ -74,7 +75,22 @@ with col3:
             st.switch_page("pages/3_TXTtoCSV.py")
         except Exception as e:
             st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
-            
+
+with col4:
+    st.markdown("""
+        <div class="tool-card">
+            <h3>🔄 준비중</h3>
+            <p>준비중입니다</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("실행하기", key="btn_test", use_container_width=True):
+        pass
+#        try:
+           # 경로에 'pages/'를 반드시 포함해야 합니다.
+#            st.switch_page("pages/3_TXTtoCSV.py")
+#        except Exception as e:
+#            st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
 
 # 5. 하단 안내
 st.divider()
