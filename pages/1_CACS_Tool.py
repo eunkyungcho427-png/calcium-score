@@ -53,11 +53,11 @@ st.markdown("""
 VBA의 복잡한 로직이 파이썬 엔진으로 구현되어 있습니다.
 \n● 정확도: 97%
 \n● 작동원리
-\n   - CACS, calcium score등 다양한 표현의 calcium score 수치를 % 기호를 빼고 숫자만 출력
-\n   - Calcium Score: 37.00 -> 41.45 인 경우, 41.45 를 출력
-\n   - 판독문 상에 CACS 수치가 없는 경우: x 출력, pending인 경우 pending 출력
+\n\t   - CACS, calcium score등 다양한 표현의 calcium score 수치를 % 기호를 빼고 숫자만 출력
+\n\t   - Calcium Score: 37.00 -> 41.45 인 경우, 41.45 를 출력
+\n\t   - 판독문 상에 CACS 수치가 없는 경우: x 출력, pending인 경우 pending 출력
 \n● 원본파일 주의사항
-\n   - 환자 ID, 판독문 2개 열 정도로 데이터를 간단하게 만든 후 업로드하면 판독문 우측 열에 결과값이 출력됩니다.
+\n\t   - 환자 ID, 판독문 2개 열 정도로 데이터를 간단하게 만든 후 업로드하면 판독문 우측 열에 결과값이 출력됩니다.
 """)
 
 uploaded_file = st.file_uploader("분석할 엑셀 파일을 업로드하세요.", type=["xlsx"])
