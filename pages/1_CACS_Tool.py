@@ -50,7 +50,6 @@ def extract_cacs_number(text):
 st.title("🏥 CACS(Calcium Score) 자동 추출 도구")
 st.markdown("""
 이 앱은 엑셀 파일 내의 텍스트에서 **CACS 수치**를 자동으로 추출하여 결과 파일을 생성합니다.
-VBA의 복잡한 로직이 파이썬 엔진으로 구현되어 있습니다.
 
 ● **정확도**: 97% \n
 ● **작동원리**  
