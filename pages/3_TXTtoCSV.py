@@ -1,46 +1,51 @@
+import streamlit as st
 import pandas as pd
-import os
-import glob
+import io
 
-def convert_txt_to_csv(folder_path):
-    # 폴더 존재 여부 확인
-    if not os.path.exists(folder_path):
-        print(f"Error: 폴더를 찾을 수 없습니다: {folder_path}")
-        return
+st.set_page_config(page_title="TXT to CSV Converter", layout="centered")
 
-    # 1. 폴더 내 모든 .txt 파일 찾기
-    txt_files = glob.glob(os.path.join(folder_path, "*.txt"))
+st.title("📂 TXT를 CSV로 변환하기")
+st.write("탭(Tab)으로 구분된 TXT 파일을 업로드하면 CSV로 변환해 드립니다.")
 
-    if not txt_files:
-        print("지정된 폴더에 TXT 파일이 없습니다.")
-        return
+# 1. 파일 업로드 (여러 개 가능)
+uploaded_files = st.file_uploader("TXT 파일을 선택하세요", type=['txt'], accept_multiple_files=True)
 
-    print(f"총 {len(txt_files)}개의 파일을 변환합니다...")
+if uploaded_files:
+    st.divider()
+    st.subheader(f"총 {len(uploaded_files)}개의 파일이 선택됨")
 
-    # 2. 각 TXT 파일 처리
-    for txt_file in txt_files:
+    for uploaded_file in uploaded_files:
         try:
-            # VBA의 vbTab 구분을 적용하여 읽기 (sep='\t')
-            # 서버 환경에선 인코딩에 따라 'utf-8' 또는 'cp949' 선택
+            # 파일 읽기 (인코딩 처리)
+            # 한국어 환경을 고려하여 cp949 시도 후 실패 시 utf-8 시도
             try:
-                df = pd.read_csv(txt_file, sep='\t', encoding='cp949')
+                df = pd.read_csv(uploaded_file, sep='\t', encoding='cp949')
             except:
-                df = pd.read_csv(txt_file, sep='\t', encoding='utf-8')
+                uploaded_file.seek(0) # 파일 포인터 초기화
+                df = pd.read_csv(uploaded_file, sep='\t', encoding='utf-8')
 
-            # CSV 파일 경로 생성
-            csv_file = os.path.splitext(txt_file)[0] + ".csv"
+            # 파일명 변경 (.txt -> .csv)
+            new_filename = uploaded_file.name.replace(".txt", ".csv")
 
-            # CSV로 저장
-            df.to_csv(csv_file, index=False, encoding='utf-8-sig')
-            print(f"성공: {os.path.basename(txt_file)}")
-            
+            # 메모리 내에서 CSV 파일 생성 (실제 서버에 저장하지 않음)
+            csv_buffer = io.StringIO()
+            df.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
+            csv_data = csv_buffer.getvalue()
+
+            # UI 구성 (파일명과 다운로드 버튼)
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.text(f"📄 {uploaded_file.name}")
+            with col2:
+                st.download_button(
+                    label="다운로드",
+                    data=csv_data,
+                    file_name=new_filename,
+                    mime='text/csv',
+                    key=uploaded_file.name # 중복 방지용 키
+                )
+
         except Exception as e:
-            print(f"오류 발생 ({os.path.basename(txt_file)}): {e}")
+            st.error(f"❌ {uploaded_file.name} 처리 중 오류 발생: {e}")
 
-    print("모든 작업이 완료되었습니다.")
-
-if __name__ == "__main__":
-    # 실행 환경에 맞는 경로를 입력하세요. 
-    # 예: "C:/data" (로컬) 또는 "./data" (서버)
-    path = input("TXT 파일이 저장된 폴더 경로를 입력하세요: ")
-    convert_txt_to_csv(path)
+    st.success("모든 변환 작업이 준비되었습니다!")
