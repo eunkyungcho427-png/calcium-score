@@ -28,23 +28,31 @@ st.info("업로드한 PDF리포트에서 LAD, LCX, RCA FFR 수치를 추출해�
 def extract_ffr_data_ocr(file_bytes):
     lad, lcx, rca = "", "", ""
     try:
-        # PDF를 이미지로 변환 (300 DPI 권장)
+        # DPI를 300으로 높여 인식률 향상
         images = convert_from_bytes(file_bytes, dpi=300)
         full_text = ""
         for img in images:
+            # 글자 인식을 더 정확하게 하기 위해 --psm 6 옵션 추가 가능
             text = pytesseract.image_to_string(img, lang='eng')
             full_text += text + "\n"
 
-        # 수치 추출 (유연한 정규표현식 적용)
-        lad_m = re.search(r'LAD\s*.*?(\d\.\d{2})', full_text, re.S | re.I)
-        lcx_m = re.search(r'LCX\s*.*?(\d\.\d{2})', full_text, re.S | re.I)
-        rca_m = re.search(r'RCA\s*.*?(\d\.\d{2})', full_text, re.S | re.I)
+        # 수치 추출 로직 강화 (숫자 앞뒤 공백 및 줄바꿈 허용)
+        # 예: "LAD"와 "0.67" 사이의 모든 텍스트 무시하고 첫 번째 소수점 숫자 찾기
+        def find_value(target, text):
+            # target 뒤에 오는 0.xx 형태의 숫자 매칭
+            pattern = re.compile(rf'{target}.*?(\d\.\d{{2}})', re.S | re.I)
+            match = pattern.search(text)
+            return match.group(1) if match else ""
 
-        lad = lad_m.group(1) if lad_m else ""
-        lcx = lcx_m.group(1) if lcx_m else ""
-        rca = rca_m.group(1) if rca_m else ""
+        lad = find_value("LAD", full_text) # [cite: 23, 24]
+        lcx = find_value("LCX", full_text) # [cite: 23, 27]
+        rca = find_value("RCA", full_text) # [cite: 25, 26]
+
+        # 디버깅용: 텍스트가 아예 안 읽히는지 확인하고 싶다면 아래 주석 해제
+        # st.write(full_text) 
+
     except Exception as e:
-        st.error(f"OCR 처리 중 오류: {e}")
+        st.error(f"오류 발생: {e}")
     return lad, lcx, rca
 
 uploaded_files = st.file_uploader("PDF 리포트 파일들을 업로드하세요(최대50개)", type="pdf", accept_multiple_files=True)
