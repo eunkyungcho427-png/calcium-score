@@ -1,3 +1,4 @@
 tesseract-ocr
-libtesseract-dev
+tesseract-ocr-eng
+libgeos-dev
 poppler-utils
