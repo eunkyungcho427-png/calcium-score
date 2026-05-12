@@ -64,7 +64,7 @@ with col3:
     st.markdown("""
         <div class="tool-card">
             <h3>🔄 TXT 파일 -> CSV 파일 변환</h3>
-            <p>지정된 폴더 내의 모든 텍스트 파일(.txt)을 데이터를 쉼표(,)로 구분하여 저장하는 파일(*.csv)로 변환합니다.</p>
+            <p>업로드한 텍스트 파일(.txt)을 데이터를 쉼표(,)로 구분하여 저장하는 파일(*.csv)로 변환합니다.</p>
         </div>
     """, unsafe_allow_html=True)
     
@@ -79,18 +79,18 @@ with col3:
 with col4:
     st.markdown("""
         <div class="tool-card">
-            <h3>🔄 준비중</h3>
-            <p>준비중입니다</p>
+            <h3>🔄 FFR PDF리포트 -> Excel리포트</h3>
+            <p>업로드한 PDF리포트에서 LAD, LCX, RCA FFR 수치를 추출해서 엑셀 파일로 변환합니다.</p>
         </div>
     """, unsafe_allow_html=True)
     
     if st.button("실행하기", key="btn_test", use_container_width=True):
         pass
-#        try:
+        try:
            # 경로에 'pages/'를 반드시 포함해야 합니다.
-#            st.switch_page("pages/3_TXTtoCSV.py")
-#        except Exception as e:
-#            st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
+            st.switch_page("pages/4_FFR_PDFtoXLS.py")
+        except Exception as e:
+            st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
 
 # 5. 하단 안내
 st.divider()
