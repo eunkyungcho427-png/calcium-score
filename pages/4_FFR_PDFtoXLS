@@ -5,14 +5,11 @@ import re
 import io
 
 # 1. 페이지 설정 (반드시 최상단에 한 번만!)
-st.set_page_config(page_title="CACS Tool", page_icon="📊", layout="wide")
+st.set_page_config(page_title="FFR Report Analyzer", layout="centered")
 
 # 2. 홈으로 돌아가기 버튼
 if st.sidebar.button("🏠 메인 화면으로 이동"):
     st.switch_page("app.py")
-
-# 페이지 설정
-st.set_page_config(page_title="FFR Report Analyzer", layout="centered")
 
 # CSS로 UI 스타일링 (Calcium Score 앱 느낌)
 st.markdown("""
