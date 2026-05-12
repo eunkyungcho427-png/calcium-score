@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-import pdfplumber
+import pytesseract
+from pdf2image import convert_from_bytes
 import re
 import io
 
@@ -20,43 +21,41 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🫀 FFR Report to Excel")
-st.write("PDF 리포트들을 업로드하면 Sistolic/Diastolic 수치를 분류하여 엑셀로 만들어 드립니다.")
 
-def extract_info(filename):
-    match = re.search(r'(\d+)_(\d+)%', filename)
-    return (match.group(1), int(match.group(2))) if match else (None, None)
+st.title("🫀 FFR Report Analyzer")
+st.info("업로드한 PDF리포트에서 LAD, LCX, RCA FFR 수치를 추출해서 엑셀 파일로 변환합니다.")
 
-def get_ffr_data(file):
+def extract_ffr_data_ocr(file_bytes):
     lad, lcx, rca = "", "", ""
     try:
-        with pdfplumber.open(file) as pdf:
-            # 2페이지 우선 탐색
-            page = pdf.pages[1] if len(pdf.pages) > 1 else pdf.pages[0]
-            text = page.extract_text()
-            if text:
-                lad_m = re.search(r'LAD\s*.*?(\d\.\d+)', text, re.S)
-                lcx_m = re.search(r'LCX\s*.*?(\d\.\d+)', text, re.S)
-                rca_m = re.search(r'RCA\s*.*?(\d\.\d+)', text, re.S)
-                lad = lad_m.group(1) if lad_m else ""
-                lcx = lcx_m.group(1) if lcx_m else ""
-                rca = rca_m.group(1) if rca_m else ""
-    except:
-        pass
+        # PDF를 이미지로 변환 (300 DPI 권장)
+        images = convert_from_bytes(file_bytes, dpi=300)
+        full_text = ""
+        for img in images:
+            text = pytesseract.image_to_string(img, lang='eng')
+            full_text += text + "\n"
+
+        # 수치 추출 (유연한 정규표현식 적용)
+        lad_m = re.search(r'LAD\s*.*?(\d\.\d{2})', full_text, re.S | re.I)
+        lcx_m = re.search(r'LCX\s*.*?(\d\.\d{2})', full_text, re.S | re.I)
+        rca_m = re.search(r'RCA\s*.*?(\d\.\d{2})', full_text, re.S | re.I)
+
+        lad = lad_m.group(1) if lad_m else ""
+        lcx = lcx_m.group(1) if lcx_m else ""
+        rca = rca_m.group(1) if rca_m else ""
+    except Exception as e:
+        st.error(f"OCR 처리 중 오류: {e}")
     return lad, lcx, rca
 
-# 파일 업로드 섹션
-uploaded_files = st.file_uploader("PDF 리포트 파일들을 선택하세요 (다중 선택 가능)", type="pdf", accept_multiple_files=True)
+uploaded_files = st.file_uploader("PDF 리포트 파일들을 업로드하세요(최대50개)", type="pdf", accept_multiple_files=True)
 
 if uploaded_files:
     data_map = {}
-    
-    with st.spinner('리포트를 분석 중입니다...'):
-        for uploaded_file in uploaded_files:
-            pid, percent = extract_info(uploaded_file.name)
-            if not pid: continue
-            
-            lad, lcx, rca = get_ffr_data(uploaded_file)
+    for f in uploaded_files:
+        name_match = re.search(r'(\d+)_(\d+)%', f.name)
+        if name_match:
+            pid, percent = name_match.group(1), int(name_match.group(2))
+            lad, lcx, rca = extract_ffr_data_ocr(f.read())
             
             if pid not in data_map:
                 data_map[pid] = {'S': ["", "", ""], 'D': ["", "", ""]}
@@ -66,7 +65,6 @@ if uploaded_files:
             else:
                 data_map[pid]['D'] = [lad, lcx, rca]
 
-    # 결과 데이터프레임 생성
     rows = []
     for pid in sorted(data_map.keys()):
         rows.append([pid] + data_map[pid]['S'] + data_map[pid]['D'])
@@ -74,24 +72,18 @@ if uploaded_files:
     cols = ['ID', 'Sistolic LAD', 'Sistolic LCX', 'Sistolic RCA', 'Diastolic LAD', 'Diastolic LCX', 'Diastolic RCA']
     df = pd.DataFrame(rows, columns=cols)
     
-    # 37행 맞추기
-    if len(df) < 37:
-        empty_df = pd.DataFrame([[""] * 7 for _ in range(37 - len(df))], columns=cols)
-        df = pd.concat([df, empty_df], ignore_index=True)
-    else:
-        df = df.head(37)
+    # 51행 맞추기
+    if len(df) < 51:
+        empty = pd.DataFrame([[""]*7]*(37-len(df)), columns=cols)
+        df = pd.concat([df, empty], ignore_index=True)
 
-    st.success(f"분석 완료! 총 {len(uploaded_files)}개의 파일이 처리되었습니다.")
-    st.dataframe(df.head(10)) # 상위 10개 미리보기
+    st.success("분석이 완료되었습니다.")
+    st.dataframe(df, use_container_width=True)
 
-    # 엑셀 다운로드 버튼
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='FFR_Data')
+        df.to_excel(writer, index=False)
     
-    st.download_button(
-        label="📥 결과 엑셀 파일 다운로드",
-        data=output.getvalue(),
-        file_name="FFR_Analysis_Result.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+    st.download_button(label="📥 결과 엑셀 다운로드", data=output.getvalue(), 
+                       file_name="FFR_Analysis.xlsx", 
+                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
