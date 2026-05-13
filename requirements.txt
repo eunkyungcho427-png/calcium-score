@@ -6,3 +6,4 @@ xlsxwriter
 pdfplumber
 openpyxl
 pillow
+opencv-python-headless
