@@ -1,85 +1,97 @@
 import streamlit as st
-import pandas as pd
-import pytesseract
-from pdf2image import convert_from_bytes
-import re
-import io
-from PIL import Image, ImageOps
 
-st.set_page_config(page_title="FFR Report Analyzer", layout="wide")
-st.title("🫀 FFR Report Analyzer (이미지 수치 추출 모드)")
+# 1. 페이지 설정
+st.set_page_config(page_title="Medical AI Workspace", page_icon="🏥", layout="wide")
 
-def extract_ffr_data_ocr(file_bytes):
-    lad, lcx, rca = "", "", ""
-    try:
-        # 1. 고해상도 이미지 변환 (DPI를 300 이상으로 해야 숫자가 깨지지 않음)
-        images = convert_from_bytes(file_bytes, dpi=350, first_page=2, last_page=2)
-        if not images:
-            images = convert_from_bytes(file_bytes, dpi=350, first_page=1, last_page=1)
-        
-        if images:
-            img = images[0]
-            # 2. 이미지 전처리: 흑백 전환 (OCR 인식률 대폭 상승)
-            img = img.convert('L') 
-            
-            # 3. OCR 실행 (숫자와 영문 위주 설정)
-            # config 설정: --psm 6 (가변적인 텍스트 블록 인식)
-            page_text = pytesseract.image_to_string(img, lang='eng', config='--psm 6')
+# 2. 디자인 (CSS) 적용
+st.markdown("""
+    <style>
+    .main { background-color: #f8f9fa; }
+    h1 { color: #1e3a8a; font-family: 'Segoe UI', sans-serif; }
+    .tool-card {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 5px solid #007bff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-            # 4. 수치 추출 로직 (줄바꿈/공백 무시)
-            def find_value(target, text):
-                # 혈관명(LAD 등) 뒤에 나오는 0.xx 혹은 .xx 숫자를 찾음
-                # [01]? : 0 또는 1이 있을 수도 없을 수도 있음 (OCR 오차 대비)
-                # [\.,] : 점(.)을 콤마(,)로 오인해도 잡히게 함
-                pattern = re.compile(rf'{target}.*?([01]?[\.,]\d{{2}})', re.S | re.I)
-                match = pattern.search(text)
-                if match:
-                    val = match.group(1).replace(',', '.')
-                    # 혹시 .85 처럼 앞에 0이 빠진 경우 보정
-                    if val.startswith('.'): val = '0' + val
-                    return val
-                return ""
+# 3. 메인 헤더
+# st.title("🏥 Medical AI 업무 자동화 포털")
+st.write("사용하고자 하는 도구를 사이드바에서 선택하거나 아래 버튼을 클릭하세요.")
+st.divider()
 
-            lad = find_value("LAD", page_text)
-            lcx = find_value("LCX", page_text)
-            rca = find_value("RCA", page_text)
+# 4. 툴 선택 구역 (버튼 방식)
+col1, col2 = st.columns(2)
+col3, col4 = st.columns(2)
 
-    except Exception as e:
-        st.error(f"OCR 분석 중 오류: {e}")
-    return lad, lcx, rca
-
-uploaded_files = st.file_uploader("PDF 리포트를 업로드하세요", type="pdf", accept_multiple_files=True)
-
-if uploaded_files:
-    data_map = {}
-    for f in uploaded_files:
-        name_match = re.search(r'(\d+)_(\d+)%', f.name)
-        if name_match:
-            pid, percent = name_match.group(1), int(name_match.group(2))
-            
-            # 파일 읽기
-            file_bytes = f.read()
-            f.seek(0)
-            
-            lad, lcx, rca = extract_ffr_data_ocr(file_bytes)
-            
-            if pid not in data_map:
-                data_map[pid] = {'S': ["", "", ""], 'D': ["", "", ""]}
-            
-            if percent <= 60:
-                data_map[pid]['S'] = [lad, lcx, rca]
-            else:
-                data_map[pid]['D'] = [lad, lcx, rca]
-
-    # 결과 출력 및 엑셀 생성 (기존 로직 동일)
-    rows = [[pid] + data_map[pid]['S'] + data_map[pid]['D'] for pid in sorted(data_map.keys())]
-    cols = ['ID', 'Sistolic LAD', 'Sistolic LCX', 'Sistolic RCA', 'Diastolic LAD', 'Diastolic LCX', 'Diastolic RCA']
-    df = pd.DataFrame(rows, columns=cols)
+with col1:
+    st.markdown("""
+        <div class="tool-card">
+            <h3>📊 CACS 데이터 추출기</h3>
+            <p>엑셀 판독문에서 CACS(Calcium Score)수치를 자동으로 정밀 추출하고 정제합니다.</p>
+        </div>
+    """, unsafe_allow_html=True)
     
-    st.success("분석이 완료되었습니다!")
-    st.dataframe(df)
+    # 수정된 버튼 부분
+    if st.button("CACS 도구 실행하기", key="btn_cacs", use_container_width=True):
+        try:
+            # 경로에 'pages/'를 반드시 포함해야 합니다.
+            st.switch_page("pages/1_CACS_Tool.py")
+        except Exception as e:
+            st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
+
+with col2:
+    st.markdown("""
+        <div class="tool-card">
+            <h3>📊 EF 데이터 추출기</h3>
+            <p>엑셀 판독문에서 EF(Ejection Fraction)수치를 자동으로 정밀 추출하고 정제합니다.</p>
+        </div>
+    """, unsafe_allow_html=True)
     
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False)
-    st.download_button("📥 엑셀 다운로드", output.getvalue(), "FFR_Result.xlsx")
+    if st.button("EF 도구 실행하기", key="btn_ef", use_container_width=True):
+        pass
+        try:
+           # 경로에 'pages/'를 반드시 포함해야 합니다.
+            st.switch_page("pages/2_EF_Tool.py")
+        except Exception as e:
+            st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
+
+with col3:
+    st.markdown("""
+        <div class="tool-card">
+            <h3>🔄 TXT 파일 -> CSV 파일 변환</h3>
+            <p>업로드한 텍스트 파일(.txt)을 데이터를 쉼표(,)로 구분하여 저장하는 파일(*.csv)로 변환합니다.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("TXT -> CSV 변환하기", key="btn_txtcsv", use_container_width=True):
+        pass
+        try:
+           # 경로에 'pages/'를 반드시 포함해야 합니다.
+            st.switch_page("pages/3_TXTtoCSV.py")
+        except Exception as e:
+            st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
+
+with col4:
+    st.markdown("""
+        <div class="tool-card">
+            <h3>🔄 FFR PDF리포트 -> Excel리포트</h3>
+            <p>업로드한 PDF리포트에서 LAD, LCX, RCA FFR 수치를 추출해서 엑셀 파일로 변환합니다.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("실행하기", key="btn_test", use_container_width=True):
+        pass
+        try:
+           # 경로에 'pages/'를 반드시 포함해야 합니다.
+            st.switch_page("pages/4_FFR_PDFtoXLS.py")
+        except Exception as e:
+            st.error("페이지를 찾을 수 없습니다. 파일이 'pages' 폴더 안에 있는지 확인해주세요.")
+
+# 5. 하단 안내
+st.divider()
+st.caption("© 2026 Created by Cho Eunkyung from Seoul National University Bundang Hospital | 문의: eunkyungcho427@gmail.com")
