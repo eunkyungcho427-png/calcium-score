@@ -1,6 +1,5 @@
 streamlit
 pandas
-pytesseract
 pdf2image
 xlsxwriter
 pdfplumber
