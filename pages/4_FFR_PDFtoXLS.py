@@ -4,6 +4,17 @@ import pytesseract
 from pdf2image import convert_from_bytes
 import re
 import io
+from PIL import Image, ImageOps
+
+st.set_page_config(page_title="FFR Report Analyzer", layout="wide")
+st.title("🫀 FFR Report Analyzer (이미지 수치 추출 모드)")
+
+import streamlit as st
+import pandas as pd
+import pytesseract
+from pdf2image import convert_from_bytes
+import re
+import io
 import numpy as np
 import cv2  # 이미지 처리를 위한 라이브러리
 from PIL import Image, ImageOps, ImageEnhance
@@ -65,3 +76,39 @@ def extract_ffr_data_ocr(file_bytes):
     return lad, lcx, rca
 
 # (나머지 Streamlit UI 코드는 동일)
+
+uploaded_files = st.file_uploader("PDF 리포트를 업로드하세요", type="pdf", accept_multiple_files=True)
+
+if uploaded_files:
+    data_map = {}
+    for f in uploaded_files:
+        name_match = re.search(r'(\d+)_(\d+)%', f.name)
+        if name_match:
+            pid, percent = name_match.group(1), int(name_match.group(2))
+            
+            # 파일 읽기
+            file_bytes = f.read()
+            f.seek(0)
+            
+            lad, lcx, rca = extract_ffr_data_ocr(file_bytes)
+            
+            if pid not in data_map:
+                data_map[pid] = {'S': ["", "", ""], 'D': ["", "", ""]}
+            
+            if percent <= 60:
+                data_map[pid]['S'] = [lad, lcx, rca]
+            else:
+                data_map[pid]['D'] = [lad, lcx, rca]
+
+    # 결과 출력 및 엑셀 생성 (기존 로직 동일)
+    rows = [[pid] + data_map[pid]['S'] + data_map[pid]['D'] for pid in sorted(data_map.keys())]
+    cols = ['ID', 'Sistolic LAD', 'Sistolic LCX', 'Sistolic RCA', 'Diastolic LAD', 'Diastolic LCX', 'Diastolic RCA']
+    df = pd.DataFrame(rows, columns=cols)
+    
+    st.success("분석이 완료되었습니다!")
+    st.dataframe(df)
+    
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False)
+    st.download_button("📥 엑셀 다운로드", output.getvalue(), "FFR_Result.xlsx")
